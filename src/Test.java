@@ -53,18 +53,17 @@ public class Test {
 //                }while(!board.put(x,y));
             }
             else {
-                GameTree tree = new GameTree(board,board.getSide());
                 if(count <= 4) {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,6).getBoard();
+                    board.chooseMove(board.getSide(),6);
                 }
                 else if(count <= 5) {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,7).getBoard();
+                    board.chooseMove(board.getSide(),7);
                 }
                 else if(count <= 6) {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,8).getBoard();
+                    board.chooseMove(board.getSide(),8);
                 }
                 else {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,99).getBoard();
+                    board.chooseMove(board.getSide(),999);
                 }
             }
         }

@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 /**
  *
@@ -7,6 +11,7 @@ public class Board{
     private char[][] board;
     private char side = 'X';
     private boolean win = false;
+    private int score = 0;
     
     public Board() {
         this(4,5);
@@ -44,6 +49,300 @@ public class Board{
     
     public boolean isValidMove(int x,int y) {
         return !isOver() && board[x][y]==' ';
+    }
+    
+    public void chooseMove(char you,int depth) {
+        Board b = chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,you,depth);
+        board = b.getBoard();
+        win = b.isWin();
+        if(!win) setOpposite();
+    }
+    
+    public Board chooseMove(int alpha,int beta,char you,int depth) {
+        Board best = new Board();
+        Board reply;
+        if(isOver()) {
+            if(isWin()) {
+                if(getSide() == you) score = Integer.MAX_VALUE-(1000-depth);
+                else score = Integer.MIN_VALUE+(1000-depth);
+            }
+            else score = 0;
+            return this;
+        }
+        if(depth <= 0) {
+            evaluate(you);
+            return this;
+        }
+        if(getSide() == you) best.setScore(alpha);
+        else best.setScore(beta);
+        int x = getBoard().length;
+        int y = getBoard()[0].length;
+        List<Board> valid = new ArrayList<>();
+        for(int i=0; i<x; i++) {
+            for(int j=0; j<y; j++) {
+                if(isValidMove(i,j)) {
+                    Board temp = new Board(board,side);
+                    temp.put(i,j);
+                    valid.add(temp);
+                }
+            }
+        }
+        Random ran = new Random();
+        best.setBoard(valid.get(ran.nextInt(valid.size())).getBoard());
+        for(Board move : valid) {
+            reply = move.chooseMove(alpha,beta,you,depth-1);
+            if(getSide() == you && reply.getScore() > best.getScore()) {
+                best.setBoard(move.getBoard());
+                best.setScore(reply.getScore());
+                alpha = reply.getScore();
+                if(alpha >= Integer.MAX_VALUE-(1000-depth)-1) return best;
+            }
+            else if(getSide() != you && reply.getScore() < best.getScore()) {
+                best.setBoard(move.getBoard());
+                best.setScore(reply.getScore());
+                beta = reply.getScore();
+                if(beta <= Integer.MIN_VALUE+(1000-depth)+1) return best;
+            }
+            if(alpha >= beta) return best;
+        }
+        return best;
+    }
+    
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+    
+    private static char[] genArray(char... c) {
+        return c;
+    }
+    
+    private void evaluate(char you) {
+        char opp = Board.getOpposite(you);
+        
+        for(int i=0; i<5; i++) {
+            char[] tmp = {board[0][i],board[1][i],board[2][i],board[3][i]};
+            
+            if(Arrays.equals(tmp,genArray(you,you,you,' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,you,' ',you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,' ',you,you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(' ',you,you,you))) score+= 50;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,opp,' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,opp))) score-= 50;
+            
+            if(Arrays.equals(tmp,genArray(you,you,' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp))) score-= 10;
+        }
+        
+        for(int i=0; i<4; i++) {
+            char[] tmp = {board[i][0],board[i][1],board[i][2],board[i][3],board[i][4]};
+            
+            if(Arrays.equals(tmp,genArray(' ',you,you,you,' '))) score+= 100;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,opp,' '))) score-= 100;
+            
+            if(Arrays.equals(tmp,genArray(' ',you,you,' ',' '))) score+= 20;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you,' '))) score+= 20;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',you,' '))) score+= 20;
+            
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' ',' '))) score-= 20;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp,' '))) score-= 20;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',opp,' '))) score+= 20;
+            
+            if(Arrays.equals(tmp,genArray(you,you,you,' ',' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,you,' ',you,' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,you,' ',you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you,you))) score+= 50;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,opp,' ',' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',opp,' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' ',opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp,opp))) score-= 50;
+            
+            if(Arrays.equals(tmp,genArray(you,you,' ',' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',you,' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',' ',you))) score+= 2;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',' ',you,you))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',' ',opp))) score-= 2;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',' ',opp,opp))) score-= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,you,you,' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(opp,you,' ',you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(opp,you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',you,you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',you,' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',you,you))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(you,opp,opp,' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(you,opp,' ',opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(you,opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',opp,opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',opp,' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',opp,opp))) score-= 10;
+            
+            if(Arrays.equals(tmp,genArray(you,you,' ',' ',opp))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',you,' ',opp))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',you,opp))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,you,' ',opp))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',you,opp))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you,opp))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' ',you))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,' ',you))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',opp,you))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' ',you))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',opp,you))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp,you))) score-= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,you,you,you,' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(opp,you,you,' ',you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(opp,you,' ',you,you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(opp,' ',you,you,you))) score+= 50;
+            
+            if(Arrays.equals(tmp,genArray(you,opp,opp,opp,' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(you,opp,opp,' ',opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(you,opp,' ',opp,opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(you,' ',opp,opp,opp))) score-= 50;
+        }
+        
+        {
+            char[] tmp = {board[0][0],board[1][1],board[2][2],board[3][3]};
+            
+            if(Arrays.equals(tmp,genArray(you,you,you,' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,you,' ',you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,' ',you,you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(' ',you,you,you))) score+= 50;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,opp,' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,opp))) score-= 50;
+            
+            if(Arrays.equals(tmp,genArray(you,you,' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp))) score-= 10;
+        }
+        
+        {
+            char[] tmp = {board[0][1],board[1][2],board[2][3],board[3][4]};
+            
+            if(Arrays.equals(tmp,genArray(you,you,you,' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,you,' ',you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,' ',you,you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(' ',you,you,you))) score+= 50;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,opp,' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,opp))) score-= 50;
+            
+            if(Arrays.equals(tmp,genArray(you,you,' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp))) score-= 10;
+        }
+        
+        {
+            char[] tmp = {board[0][4],board[1][3],board[2][2],board[3][1]};
+            
+            if(Arrays.equals(tmp,genArray(you,you,you,' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,you,' ',you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,' ',you,you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(' ',you,you,you))) score+= 50;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,opp,' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,opp))) score-= 50;
+            
+            if(Arrays.equals(tmp,genArray(you,you,' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp))) score-= 10;
+        }
+        
+        {
+            char[] tmp = {board[0][3],board[1][2],board[2][1],board[3][0]};
+            
+            if(Arrays.equals(tmp,genArray(you,you,you,' '))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,you,' ',you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(you,' ',you,you))) score+= 50;
+            if(Arrays.equals(tmp,genArray(' ',you,you,you))) score+= 50;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,opp,' '))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,opp))) score-= 50;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,opp))) score-= 50;
+            
+            if(Arrays.equals(tmp,genArray(you,you,' ',' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(you,' ',' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,you,' '))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',you,' ',you))) score+= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',you,you))) score+= 10;
+            
+            if(Arrays.equals(tmp,genArray(opp,opp,' ',' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(opp,' ',' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,opp,' '))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',opp,' ',opp))) score-= 10;
+            if(Arrays.equals(tmp,genArray(' ',' ',opp,opp))) score-= 10;
+        }
     }
     
     public char[][] getBoard() {

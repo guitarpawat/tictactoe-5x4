@@ -55,18 +55,14 @@ public class TicTacToe {
                 }while(!board.put(x,y));
             }
             else {
-                GameTree tree = new GameTree(board,board.getSide());
-                if(count <= 4) {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,6).getBoard();
+                if(count <= 3) {
+                    board.chooseMove(board.getSide(),8);
                 }
-                else if(count <= 5) {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,7).getBoard();
-                }
-                else if(count <= 6) {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,8).getBoard();
+                else if(count <= 4) {
+                    board.chooseMove(board.getSide(),10);
                 }
                 else {
-                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,99).getBoard();
+                    board.chooseMove(board.getSide(),999);
                 }
             }
         }
