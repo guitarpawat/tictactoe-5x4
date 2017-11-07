@@ -1,0 +1,193 @@
+
+import java.awt.Font;
+import java.util.Random;
+
+
+
+/** The three-in-a-row game for two human players. */
+public class TicTacToe {
+    
+    private static boolean computerMove = false;
+    private static Board board = new Board();
+    private static int count = 0;
+    private static final boolean AI_TEST = false;
+
+    /**
+     * Draws the state of board, including instructions or a game over message.
+     */
+    public static void draw() {
+        StdDraw.clear(StdDraw.BLACK);
+        StdDraw.line(0.5, -0.5, 0.5, 4.5);
+        StdDraw.line(1.5, -0.5, 1.5, 4.5);
+        StdDraw.line(2.5, -0.5, 2.5, 4.5);
+        StdDraw.line(-0.5, 0.5, 3.5, 0.5);
+        StdDraw.line(-0.5, 1.5, 3.5, 1.5);
+        StdDraw.line(-0.5, 2.5, 3.5, 2.5);
+        StdDraw.line(-0.5, 3.5, 3.5, 3.5);
+        char[][] boardArray = board.getBoard();
+        for (int x = 0; x < boardArray.length; x++) {
+            for (int y = 0; y < boardArray[x].length; y++) {
+                StdDraw.text(x, y, boardArray[x][y] + "");
+            }
+        }
+        StdDraw.setPenColor(StdDraw.YELLOW);
+        if(board.isOver()) {
+            if(board.isWin()) StdDraw.text(1.5, -0.5, "The winner is "+board.getSide()+"!");
+            else StdDraw.text(1.5, -0.5, "Draw Game!");
+        }
+        else StdDraw.text(1.5, -0.5, board.getSide() + " to play. Click in a square.");
+        StdDraw.show(0);
+        StdDraw.setPenColor(StdDraw.WHITE);
+    }
+
+    /**
+     * Handles a mouse click, placing player's mark in the square on which the
+     * user clicks.
+     */
+    public static void handleMouseClick() {
+        if(computerMove) {
+            if(count <= 1) {
+                int x,y;
+                do {
+                    Random ran = new Random();
+                    x = ran.nextInt(4);
+                    y = ran.nextInt(5);
+                }while(!board.put(x,y));
+            }
+            else {
+                GameTree tree = new GameTree(board,board.getSide());
+                if(count <= 4) {
+                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,6).getBoard();
+                }
+                else if(count <= 5) {
+                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,7).getBoard();
+                }
+                else if(count <= 6) {
+                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,8).getBoard();
+                }
+                else {
+                    board = tree.chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,99).getBoard();
+                }
+            }
+        }
+        else {
+            while (!StdDraw.mousePressed()) {
+            // Wait for mouse press
+            }
+        
+            double x = Math.round(StdDraw.mouseX());
+            double y = Math.round(StdDraw.mouseY());
+            while (StdDraw.mousePressed()) {
+                // Wait for mouse release
+            }
+            int a = (int) x;
+            int b = (int) y;
+            board.put(a,b);
+        }
+    }
+
+    
+
+    /**
+     * Plays the game.
+     */
+    public static void main(String[] args) {
+        init();
+        if(!AI_TEST) {
+            int mode = 4;
+            while((mode = getMode()) >= 4) {
+                // Invalid Options.
+            }
+            startGame(mode);
+        }
+        else {
+            int draw=0,X=0,O=0;
+            for(int i=0; i<50; i++){
+                board = new Board();
+                startGame(0);
+                if(board.isWin()) {
+                    if(board.getSide() == 'X') {
+                        X++;
+                        System.out.println("Round "+i+" : X Win.");
+                    }
+                    else {
+                        O++;
+                        System.out.println("Round "+i+" : O Win.");
+                    }
+                    char[][] result = board.getBoard();
+                    for(int y=4; y>=0; y--) {
+                        System.out.print("| ");
+                        for(int x=0; x<4; x++) {
+                            System.out.print(result[x][y]+" | ");
+                        }
+                        System.out.println();
+                    }
+                }
+                else {
+                    draw++;
+                    System.out.println("Round "+i+" : Draw.");
+                }
+                count = 0;
+//                try {
+//                    Thread.sleep(1500L);
+//                } catch (InterruptedException ex) {}
+            }
+            System.out.printf("Result[D:X:O] = [%d:%d:%d]\n",draw,X,O);
+        }
+    }
+    
+    public static int getMode() {
+        while (!StdDraw.mousePressed()) {
+            // Wait for mouse press
+        }
+        double y = Math.round(StdDraw.mouseY());
+        while (StdDraw.mousePressed()) {
+            // Wait for mouse release
+        }
+        return (int) y;
+    }
+    
+    public static void init() {
+        StdDraw.setFont(new Font("sans serif",Font.BOLD,30));
+        StdDraw.setXscale(-0.5, 3.5);
+        StdDraw.setYscale(-0.5, 4.5);
+        StdDraw.setPenColor(StdDraw.BOOK_BLUE);
+        StdDraw.filledRectangle(1.5,4,2,0.4);
+        StdDraw.setPenColor(StdDraw.LIGHT_GRAY);
+        StdDraw.text(1.5,4,"Tic Tac Toe Game");
+        StdDraw.setPenColor();
+        StdDraw.rectangle(1.5,3,2,0.4);
+        StdDraw.text(1.5,3,"Player vs Player");
+        StdDraw.rectangle(1.5,2,2,0.4);
+        StdDraw.text(1.5,2,"Player vs Computer");
+        StdDraw.rectangle(1.5,1,2,0.4);
+        StdDraw.text(1.5,1,"Computer vs Player");
+        StdDraw.rectangle(1.5,0,2,0.4);
+        StdDraw.text(1.5,0,"Watch Computer Play!");
+    }
+    
+    public static void startGame(int mode) {
+        StdDraw.setPenColor(StdDraw.LIGHT_GRAY);
+        draw();
+        while (!board.isOver()) {
+            if(board.getSide() == 'X') count++;
+             if(mode == 0) {
+                 computerMove = true;
+//                if(count >= 8) {
+//                    try {
+//                    Thread.sleep(250L);
+//                    } catch (InterruptedException ex) {}
+//                }
+             }
+             if(mode == 1) {
+                 computerMove = board.getSide() == 'X';
+             }
+             if(mode == 2) {
+                 computerMove = board.getSide() == 'O';
+             }
+            handleMouseClick();
+            draw();
+        }
+    }
+    
+}

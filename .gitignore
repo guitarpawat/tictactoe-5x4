@@ -1,0 +1,7 @@
+*.xml
+*.mf
+*.txt
+*.docx
+/test
+/nbproject
+/build
