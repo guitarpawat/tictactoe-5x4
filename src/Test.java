@@ -54,10 +54,10 @@ public class Test {
             }
             else {
                 if(count <= 3) {
-                    board.chooseMove(board.getSide(),8);
+                    board.chooseMove(board.getSide(),7);
                 }
                 else if(count <= 4) {
-                    board.chooseMove(board.getSide(),10);
+                    board.chooseMove(board.getSide(),8);
                 }
                 else {
                     board.chooseMove(board.getSide(),999);
