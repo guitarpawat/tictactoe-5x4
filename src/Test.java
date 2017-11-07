@@ -59,6 +59,9 @@ public class Test {
                 else if(count <= 4) {
                     board.chooseMove(board.getSide(),8);
                 }
+                else if(count <= 5) {
+                    board.chooseMove(board.getSide(),9);
+                }
                 else {
                     board.chooseMove(board.getSide(),999);
                 }

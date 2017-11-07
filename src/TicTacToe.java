@@ -56,10 +56,13 @@ public class TicTacToe {
             }
             else {
                 if(count <= 3) {
-                    board.chooseMove(board.getSide(),8);
+                    board.chooseMove(board.getSide(),7);
                 }
                 else if(count <= 4) {
-                    board.chooseMove(board.getSide(),10);
+                    board.chooseMove(board.getSide(),8);
+                }
+                else if(count <= 5) {
+                    board.chooseMove(board.getSide(),9);
                 }
                 else {
                     board.chooseMove(board.getSide(),999);
