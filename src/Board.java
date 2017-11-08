@@ -52,10 +52,12 @@ public class Board{
     }
     
     public void chooseMove(char you,int depth) {
-        Board b = chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,you,depth);
-        board = b.getBoard();
-        win = b.isWin();
-        if(!win) setOpposite();
+        if(!isOver()) {
+            Board b = chooseMove(Integer.MIN_VALUE,Integer.MAX_VALUE,you,depth);
+            board = b.getBoard();
+            checkWin();
+            if(!win) setOpposite();
+        }
     }
     
     public Board chooseMove(int alpha,int beta,char you,int depth) {
