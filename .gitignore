@@ -3,6 +3,7 @@
 *.txt
 *.docx
 *.jpg
+*.pdf
 /test
 /nbproject
 /build

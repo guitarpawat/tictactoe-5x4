@@ -172,11 +172,11 @@ public class TicTacToe {
             if(board.getSide() == 'X') count++;
              if(mode == 0) {
                  computerMove = true;
-//                if(count >= 8) {
-//                    try {
-//                    Thread.sleep(250L);
-//                    } catch (InterruptedException ex) {}
-//                }
+                if(count >= 6) {
+                    try {
+                    Thread.sleep(250L);
+                    } catch (InterruptedException ex) {}
+                }
              }
              if(mode == 1) {
                  computerMove = board.getSide() == 'X';
